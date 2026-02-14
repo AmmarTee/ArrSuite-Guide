@@ -81,20 +81,27 @@ graph TD
 
 ## ⚙️ Automation Scripts Guide
 
-This repository includes several scripts to automate the heavy lifting. The most efficient way to use them is to copy and paste the one-line commands below directly into your **Proxmox Host Shell**.
+These scripts are designed for the **Proxmox (Debian) Shell**. Use these one-liners to fetch and execute directly without manually managing file permissions.
 
-### 🚀 One-Click Deployment & Setup
-| Script | Purpose | Copy-Paste Command (Run on Host) |
+### 🚀 One-Line Deployment & Setup
+| Task | Description | One-Liner (Copy-Paste to PVE Host) |
 | :--- | :--- | :--- |
-| **Full Stack Deploy** | Install Prowlarr, Sonarr, Radarr, Jellyfin. | `wget -qO- https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/arr-stack-deploy.sh | bash` |
-| **NFS/NAS Setup** | Mount your NAS to the Proxmox Host. | `wget https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/nfs-setup.sh && chmod +x nfs-setup.sh && ./nfs-setup.sh` |
-| **Storage Helper** | Bind mount host storage to a specific LXC. | `wget https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/ct-add-storage.sh && chmod +x ct-add-storage.sh && ./ct-add-storage.sh <VMID>` |
-| **Host Maintenance**| Reclaim space and clear logs. | `wget -qO- https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/pve-cleaner.sh | bash` |
+| **Deploy Full Stack** | Auto-installs Prowlarr, Sonarr, Radarr, Jellyfin. | `bash -c "$(wget -qLO - https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/arr-stack-deploy.sh)"` |
+| **Setup NFS/NAS** | Interactive script to mount your storage. | `bash -c "$(wget -qLO - https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/nfs-setup.sh)"` |
+| **Add Storage to CT**| Bind mount host storage to a specific LXC. | `wget https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/ct-add-storage.sh -O /usr/local/bin/ct-add-storage && chmod +x /usr/local/bin/ct-add-storage` |
+| **System Cleanup** | Reclaim space and vacuum system logs. | `bash -c "$(wget -qLO - https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/pve-cleaner.sh)"` |
 
 ### 🛡️ Persistence & Reliability
-To ensure your NAS mounts stay active, add the watchdog to your system crontab:
-1.  Download: `wget -P /usr/local/bin/ https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/nfs-watchdog.sh && chmod +x /usr/local/bin/nfs-watchdog.sh`
-2.  Automate: Add `* * * * * /usr/local/bin/nfs-watchdog.sh` to your `crontab -e`.
+To prevent "Stale File Handle" errors, install the watchdog into your system crontab:
+
+```bash
+# 1. Install the script
+wget -qLO /usr/local/bin/nfs-watchdog.sh https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/nfs-watchdog.sh
+chmod +x /usr/local/bin/nfs-watchdog.sh
+
+# 2. Add to crontab (Run every minute)
+(crontab -l 2>/dev/null; echo "* * * * * /usr/local/bin/nfs-watchdog.sh") | crontab -
+```
 
 ---
 
