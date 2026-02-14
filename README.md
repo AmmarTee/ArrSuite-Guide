@@ -81,30 +81,20 @@ graph TD
 
 ## ⚙️ Automation Scripts Guide
 
-This repository includes several scripts to automate the heavy lifting. All scripts are designed to be executed on the **Proxmox Host** via the shell (SSH or Web Console).
+This repository includes several scripts to automate the heavy lifting. The most efficient way to use them is to copy and paste the one-line commands below directly into your **Proxmox Host Shell**.
 
-### 🛠️ General Execution Steps
-To run any script in this repo, follow these three steps:
-
-1.  **Download/Access**: If you've cloned the repo, the scripts are already there. If not, you can fetch them via `wget`.
-2.  **Permissions**: Make the script executable using `chmod +x`.
-3.  **Execute**: Run it with root privileges.
-
-```bash
-# Example: Running the NFS setup script
-chmod +x nfs-setup.sh
-./nfs-setup.sh
-```
-
-### 📦 Key Scripts Summary
-
-| Script | When to use it | Execution Command |
+### 🚀 One-Click Deployment & Setup
+| Script | Purpose | Copy-Paste Command (Run on Host) |
 | :--- | :--- | :--- |
-| **`nfs-setup.sh`** | Before deploying containers. | `./nfs-setup.sh` |
-| **`arr-stack-deploy.sh`**| To install the full suite. | `./arr-stack-deploy.sh` |
-| **`ct-add-storage.sh`** | After a container is created. | `./ct-add-storage.sh <VMID>` |
-| **`pve-cleaner.sh`** | Monthly maintenance. | `./pve-cleaner.sh` |
-| **`nfs-watchdog.sh`** | Automatically via Cron. | `* * * * * /path/to/nfs-watchdog.sh` |
+| **Full Stack Deploy** | Install Prowlarr, Sonarr, Radarr, Jellyfin. | `wget -qO- https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/arr-stack-deploy.sh | bash` |
+| **NFS/NAS Setup** | Mount your NAS to the Proxmox Host. | `wget https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/nfs-setup.sh && chmod +x nfs-setup.sh && ./nfs-setup.sh` |
+| **Storage Helper** | Bind mount host storage to a specific LXC. | `wget https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/ct-add-storage.sh && chmod +x ct-add-storage.sh && ./ct-add-storage.sh <VMID>` |
+| **Host Maintenance**| Reclaim space and clear logs. | `wget -qO- https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/pve-cleaner.sh | bash` |
+
+### 🛡️ Persistence & Reliability
+To ensure your NAS mounts stay active, add the watchdog to your system crontab:
+1.  Download: `wget -P /usr/local/bin/ https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/nfs-watchdog.sh && chmod +x /usr/local/bin/nfs-watchdog.sh`
+2.  Automate: Add `* * * * * /usr/local/bin/nfs-watchdog.sh` to your `crontab -e`.
 
 ---
 
