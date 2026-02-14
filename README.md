@@ -1,142 +1,107 @@
-# 🎬 ArrSuite-Guide: The Infinite Homelab Wiki
+# 🎬 ArrSuite-Guide: The Ultimate Media Homelab Wiki
 
 ![Proxmox](https://img.shields.io/badge/Proxmox-VE%208.x-orange?style=for-the-badge&logo=proxmox)
 ![LXC](https://img.shields.io/badge/LXC-Unprivileged-blue?style=for-the-badge&logo=linux)
 ![Jellyfin](https://img.shields.io/badge/Jellyfin-10.8+-purple?style=for-the-badge&logo=jellyfin)
-![Bash](https://img.shields.io/badge/Bash-Scripts-green?style=for-the-badge&logo=gnu-bash)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-Welcome to the **ArrSuite-Guide**. This is a comprehensive, DevOps-engineered blueprint for building a "Netflix-Killer" media stack using **Proxmox LXC containers** (Zero-Overhead) instead of bulky Docker VMs.
-
----
-
-## 🧭 Project Navigation
-This repository is structured as a generalized wiki. Start here to find what you need.
-
-| Category | Documentation / Script | Description |
-| :--- | :--- | :--- |
-| **Main Guides** | 📖 [Complete Setup Guide](./ARR_STACK_SETUP.md) | Step-by-step installation from scratch. |
-| | 🏗️ [Architecture Deep Dive](./ARCHITECTURE.md) | The "Why" behind LXC vs Docker & Storage logic. |
-| | 🔐 [VPN & Split Tunneling](./VPN_SPLIT_TUNNEL_SETUP.md) | Secure routing for indexers and downloads. |
-| **Automation** | 🚀 [Master Deploy Script](./arr-stack-deploy.sh) | One-click stack deployment for all containers. |
-| | 🗄️ [NFS Interactive Setup](./nfs-setup.sh) | Configure your NAS mount on the PVE host. |
-| | 🔧 [Container Storage Helper](./ct-add-storage.sh) | Quickly bind-mount storage to any LXC. |
-| | 🛡️ [NFS Watchdog](./nfs-watchdog.sh) | Self-healing script for stale NFS handles. |
-| | 🧹 [PVE Cleaner](./pve-cleaner.sh) | Reclaim SSD space on your Proxmox host. |
-| **References** | ✅ [Setup Checklist](./example-configs/quick-setup-checklist.md) | Don't miss a single configuration step. |
-| | 📂 [Path Schema](./example-configs/sonarr-radarr-paths.md) | The "Atomic Move" compliant path structure. |
-| | 📟 [Container CLI Guide](./example-configs/container-management.md) | Essential Proxmox `pct` commands. |
+Welcome to the **ArrSuite-Guide Wiki**. This project provides a production-grade blueprint for building a high-performance, automated media empire using **Proxmox LXC containers**. By utilizing system-level virtualization (LXC) instead of hardware-level VMs, we achieve a "Zero-Overhead" environment that is easier to back up, faster to deploy, and more resource-efficient.
 
 ---
 
-## 🏗️ Visual Architecture
+## 🗺️ Step-by-Step Deployment Roadmap
+
+Follow these steps in order to build your stack from the ground up.
+
+### 🏁 Level 1: Foundation
+1.  **[Architecture Deep Dive](./ARCHITECTURE.md)**: Understand the logic of LXC vs. Docker and why we use unprivileged containers.
+2.  **[NAS & Storage Setup](./nfs-setup.sh)**: Use this interactive script to mount your network storage (NFS) to the Proxmox host.
+3.  **[Path Schema Reference](./example-configs/sonarr-radarr-paths.md)**: Set up your folders correctly to enable "Atomic Moves" (instant file transfers).
+
+### 🚀 Level 2: Deployment
+4.  **[Master Stack Deploy](./arr-stack-deploy.sh)**: Run the one-click installer to spin up the entire Arr Suite in isolated containers.
+5.  **[Storage Mounting Helper](./ct-add-storage.sh)**: Use this script to bridge the host's media storage into each new container.
+6.  **[The Setup Checklist](./example-configs/quick-setup-checklist.md)**: A line-by-line guide to configuring the web UIs for the first time.
+
+### 🔐 Level 3: Security & Networking
+7.  **[VPN & Split Tunneling](./VPN_SPLIT_TUNNEL_SETUP.md)**: Route your download traffic through a VPN while keeping your management UI local.
+8.  **[Remote Access Guide](./VPN_GETTING_STARTED.md)**: Set up Cloudflare Tunnels (for management) and Tailscale (for 4K streaming).
+
+### 🛠️ Level 4: Maintenance
+9.  **[Host Health & Cleanup](./pve-cleaner.sh)**: Automate the removal of old logs and orphan images.
+10. **[NFS Watchdog](./nfs-watchdog.sh)**: A self-healing cron job to ensure your NAS mounts never stay "stale."
+
+---
+
+## 🏗️ Technical Architecture
 
 ```mermaid
 graph TD
-    subgraph "Storage Layer"
-        NAS[24TB NAS / WD EX2 Ultra<br/>NFS: all_squash]
+    subgraph "External Storage"
+        NAS[NAS / Media Server<br/>NFS Share]
     end
 
-    subgraph "Compute Layer (i5-7500 / 32GB RAM)"
-        PVE[Proxmox VE Host]
-        GPU[NVS 510 Passthrough]
+    subgraph "Proxmox Virtual Environment (PVE)"
+        Host[PVE Host]
+        GPU[Hardware GPU]
         
         subgraph "LXC Microservices"
-            Arr[Indexer/Automation<br/>Sonarr, Radarr, Prowlarr]
-            QBT[Download Engine<br/>qBittorrent + VPN]
-            JF[Media Server<br/>Jellyfin + GPU Transcode]
+            Arr[Automation Suite<br/>Sonarr, Radarr, Prowlarr]
+            QBT[Download Client<br/>qBittorrent / VPN]
+            JF[Streaming Server<br/>Jellyfin / Plex]
         end
     end
 
-    subgraph "Access Layer"
-        CF[Cloudflare Tunnels<br/>Management Web UIs]
-        TS[Tailscale Overlay<br/>4K Video Streaming]
+    subgraph "Remote Access"
+        CF[Cloudflare Tunnel<br/>Management WebUI]
+        TS[Tailscale Mesh<br/>Video Streaming]
     end
 
-    NAS -- "NFS (AnonUID:1000)" --> PVE
-    PVE -- "Bind Mount (-mp0)" --> Arr
-    PVE -- "Bind Mount (-mp0)" --> QBT
-    PVE -- "Bind Mount (-mp0)" --> JF
-    GPU -- "Dev Node Passthrough" --> JF
-    
-    CF -- "Secure Access" --> Arr
+    NAS -- "NFS Mount" --> Host
+    Host -- "LXC Bind Mount" --> Arr & QBT & JF
+    GPU -- "Device Passthrough" --> JF
+    CF -- "Secure Domain" --> Arr
     TS -- "CGNAT Bypass" --> JF
 ```
 
 ---
 
-## 🛠️ The "Secret Sauce" (Core Cheatsheets)
+## 🛠️ Essential CLI Cheatsheet
 
-### 1. The LXC Permission Fix (`all_squash`)
-To solve permission issues in **Unprivileged Containers**, don't mess with complex UID mapping. Use `all_squash` on your NAS NFS export settings.
-
-*   **NAS Settings (`/etc/exports`):**
-    ```bash
-    /mnt/HD/HD_a2/Media *(rw,all_squash,anonuid=1000,anongid=1000)
-    ```
-*   **PVE Host Bind Mount:**
-    ```bash
-    # Mount the host path to the container's path
-    pct set <vmid> -mp0 /mnt/pve/media,mp=/mnt/media
-    ```
-
-### 2. Hardware Transcoding (NVIDIA NVS 510)
-Pass the GPU nodes directly to the LXC container. No VM PCI passthrough needed!
-
-*   **LXC Config (`/etc/pve/lxc/XXX.conf`):**
-    ```bash
-    lxc.cgroup2.devices.allow: c 195:* rwm
-    lxc.cgroup2.devices.allow: c 509:* rwm
-    lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file
-    lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file
-    lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file
-    ```
-
-### 3. Ultimate CLI Cheat Sheet
-| Command | Action |
+| Task | Command |
 | :--- | :--- |
-| `pct list` | List all containers and their status. |
-| `pct enter <ID>` | Drop into the shell of a container. |
-| `pct exec <ID> -- apt update` | Run a command inside a container without entering. |
-| `vzdump <ID> --mode snapshot` | Create an instant backup before updating an app. |
-| `journalctl -u sonarr -f` | Watch live logs for a specific service (inside LXC). |
+| **List Containers** | `pct list` |
+| **Enter Container** | `pct enter <VMID>` |
+| **Stop/Start** | `pct stop <VMID>` \| `pct start <VMID>` |
+| **Mass Update** | `pct exec <VMID> -- apt update && apt upgrade -y` |
+| **Instant Backup** | `vzdump <VMID> --mode snapshot --storage local` |
+| **Check Mounts** | `df -h` |
 
 ---
 
-## 📦 Automation Scripts Vault
+## ❓ Frequently Asked Questions
 
-### 🚀 [arr-stack-deploy.sh](./arr-stack-deploy.sh)
-The one-click solution. This script executes multiple community-sourced LXC install scripts in sequence, setting up your entire infrastructure in under 10 minutes.
+### 🌩️ General Logic
+**Q: Why LXC and not Docker in a VM?**  
+A: Efficiency and integration. A VM wastes 512MB-1GB of RAM just to boot its own kernel. LXC shares the Proxmox kernel, using only the RAM the app actually needs. Plus, you get native Proxmox backups for every single service individually.
 
-### 🛡️ [nfs-watchdog.sh](./nfs-watchdog.sh)
-NFS mounts on Proxmox can become "stale" if the NAS reboots or network drops.
-1. Save to `/usr/local/bin/nfs-watchdog.sh`.
-2. Add to crontab: `* * * * * /usr/local/bin/nfs-watchdog.sh`.
-It checks for staleness and forces a remount automatically.
+**Q: What is a "Bind Mount"?**  
+A: It’s a way to let an LXC container "see" a folder on the Proxmox host. Instead of the container having its own 10TB virtual disk, it simply looks through a "window" at the host's storage.
 
-### 🗄️ [nfs-setup.sh](./nfs-setup.sh) & [ct-add-storage.sh](./ct-add-storage.sh)
-A two-step storage workflow:
-1. `nfs-setup.sh`: Interactive script to mount your NAS to the PVE host.
-2. `ct-add-storage.sh`: Adds the bind mount to your containers so they can see the media.
+### 💾 Storage & Permissions
+**Q: Why do I get "Permission Denied" in my containers?**  
+A: Proxmox "Unprivileged" containers map user IDs to high numbers for security. The easiest fix is setting `all_squash` on your NAS NFS export, which forces all connections to use a specific ID (usually 1000).
 
----
+**Q: Can I use Local Hard Drives instead of a NAS?**  
+A: Absolutely. Just mount the drive to `/mnt/storage` on the Proxmox host and use the `ct-add-storage.sh` script provided in this repo.
 
-## 🌐 Networking & Access Strategy
-*   **Cloudflare Tunnels**: Best for **Management** (Sonarr, Radarr, Overseerr). It provides a secure domain without opening ports.
-*   **Tailscale**: Best for **Streaming** (Jellyfin). Since Cloudflare ToS forbids high-bandwidth video, Tailscale creates a private mesh network that bypasses CGNAT and works on any device.
+### 🎥 Hardware & Performance
+**Q: How do I enable Transcoding?**  
+A: You must pass your GPU device nodes (e.g., `/dev/dri` or `/dev/nvidia*`) from the host to the LXC config file. See the [Hardware Guide](./ARCHITECTURE.md#phase-4-hardware--transcoding) for the specific lines to add.
 
----
-
-## ❓ FAQ
-
-**Q: Why LXC instead of Docker in a VM?**
-A: **Efficiency.** A VM requires its own kernel and reserved RAM. LXC shares the host kernel, using only ~100MB RAM per container. It also allows native Proxmox backups and snapshots.
-
-**Q: Is it hard to manage multiple containers?**
-A: Not with the [Container CLI Guide](./example-configs/container-management.md). Proxmox's GUI also makes it easy to monitor everything in one place.
-
-**Q: How do I update the apps?**
-A: Most *arr apps update themselves via their own internal UI. For OS updates, run `apt update` inside the LXC or use our mass-update command in the cheatsheet.
+**Q: Can multiple containers share the same GPU?**  
+A: Yes! Unlike a VM which "claims" the hardware entirely, LXC allows multiple containers to share the same GPU device nodes simultaneously.
 
 ---
 
-*Found this useful? Star the repo and join the self-hosting revolution!*
+*Found this guide helpful? Give it a ⭐ on GitHub!*
