@@ -109,6 +109,7 @@ This directory contains helper scripts and configuration examples for setting up
 
 ### Advanced Setup Guides
 - **[VPN_SPLIT_TUNNEL_SETUP.md](VPN_SPLIT_TUNNEL_SETUP.md)** - WireGuard VPN with split tunneling
+- **[docs/CLEANUPARR_CLOUDFLARE_SETUP.md](docs/CLEANUPARR_CLOUDFLARE_SETUP.md)** - Cloudflare domain access for Cleanuparr  
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical architecture deep-dive
 - **[PLAN.md](PLAN.md)** - Future development roadmap
 

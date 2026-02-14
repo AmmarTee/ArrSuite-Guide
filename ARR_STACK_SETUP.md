@@ -541,16 +541,34 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/Proxmo
 
 **What it does:** Automatically removes content based on rules (watched status, age, disk space).
 
+**Default Port:** `11011`
+
 **Installation:**
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/cleanuparr.sh)"
 ```
 
+**Setup Steps:**
+
+1. **Access Web UI:** Open `http://YOUR-PROXMOX-IP:11011` in your browser
+2. **Connect to Media Server:**
+   - Settings → Media Servers
+   - Add Jellyfin/Plex/Emby
+3. **Configure Rules:**
+   - Settings → Rules → Add Rule
+   - Example: Delete movies unwatched after 90 days
+   - Example: Remove TV shows after fully watched
+4. **Set Thresholds:**
+   - Delete when disk usage exceeds 90%
+   - Keep minimum 100GB free space
+
 **Example Use Cases:**
 - Remove movies after 90 days if not watched
 - Delete shows after all episodes are watched
 - Free space when storage reaches 90% capacity
+
+**Remote Access:** Need to access Cleanuparr externally via domain (e.g., through Cloudflare)? See [docs/CLEANUPARR_CLOUDFLARE_SETUP.md](docs/CLEANUPARR_CLOUDFLARE_SETUP.md) for complete configuration guide.
 
 ---
 
