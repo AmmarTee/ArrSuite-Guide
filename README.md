@@ -79,6 +79,35 @@ graph TD
 
 ---
 
+## ⚙️ Automation Scripts Guide
+
+This repository includes several scripts to automate the heavy lifting. All scripts are designed to be executed on the **Proxmox Host** via the shell (SSH or Web Console).
+
+### 🛠️ General Execution Steps
+To run any script in this repo, follow these three steps:
+
+1.  **Download/Access**: If you've cloned the repo, the scripts are already there. If not, you can fetch them via `wget`.
+2.  **Permissions**: Make the script executable using `chmod +x`.
+3.  **Execute**: Run it with root privileges.
+
+```bash
+# Example: Running the NFS setup script
+chmod +x nfs-setup.sh
+./nfs-setup.sh
+```
+
+### 📦 Key Scripts Summary
+
+| Script | When to use it | Execution Command |
+| :--- | :--- | :--- |
+| **`nfs-setup.sh`** | Before deploying containers. | `./nfs-setup.sh` |
+| **`arr-stack-deploy.sh`**| To install the full suite. | `./arr-stack-deploy.sh` |
+| **`ct-add-storage.sh`** | After a container is created. | `./ct-add-storage.sh <VMID>` |
+| **`pve-cleaner.sh`** | Monthly maintenance. | `./pve-cleaner.sh` |
+| **`nfs-watchdog.sh`** | Automatically via Cron. | `* * * * * /path/to/nfs-watchdog.sh` |
+
+---
+
 ## ❓ Frequently Asked Questions
 
 ### 🌩️ General Logic
