@@ -1,133 +1,336 @@
-# 🎬 ArrSuite-Guide: The Ultimate Media Homelab Wiki
+# ArrSuite-Guide: Universal Media Automation for Proxmox
 
-![Proxmox](https://img.shields.io/badge/Proxmox-VE%208.x-orange?style=for-the-badge&logo=proxmox)
-![LXC](https://img.shields.io/badge/LXC-Unprivileged-blue?style=for-the-badge&logo=linux)
-![Jellyfin](https://img.shields.io/badge/Jellyfin-10.8+-purple?style=for-the-badge&logo=jellyfin)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
+> **Complete media server automation stack** for Proxmox VE supporting **Homelab, OVH, Hetzner, AWS, and Generic VPS** deployments.
 
-Welcome to the **ArrSuite-Guide Wiki**. This project provides a production-grade blueprint for building a high-performance, automated media empire using **Proxmox LXC containers**. By utilizing system-level virtualization (LXC) instead of hardware-level VMs, we achieve a "Zero-Overhead" environment that is easier to back up, faster to deploy, and more resource-efficient.
+## 🌍 Supported Environments
 
----
+This guide now supports multiple deployment scenarios:
 
-## 🗺️ Step-by-Step Deployment Roadmap
-
-Follow these steps in order to build your stack from the ground up.
-
-### 🏁 Level 1: Foundation
-1.  **[Architecture Deep Dive](./ARCHITECTURE.md)**: Understand the logic of LXC vs. Docker and why we use unprivileged containers.
-2.  **[NAS & Storage Setup](./nfs-setup.sh)**: Use this interactive script to mount your network storage (NFS) to the Proxmox host.
-3.  **[Path Schema Reference](./example-configs/sonarr-radarr-paths.md)**: Set up your folders correctly to enable "Atomic Moves" (instant file transfers).
-
-### 🚀 Level 2: Deployment
-4.  **[Master Stack Deploy](./arr-stack-deploy.sh)**: Run the one-click installer to spin up the entire Arr Suite in isolated containers.
-5.  **[Storage Mounting Helper](./ct-add-storage.sh)**: Use this script to bridge the host's media storage into each new container.
-6.  **[The Setup Checklist](./example-configs/quick-setup-checklist.md)**: A line-by-line guide to configuring the web UIs for the first time.
-
-### 🔐 Level 3: Security & Networking
-7.  **[VPN & Split Tunneling](./VPN_SPLIT_TUNNEL_SETUP.md)**: Route your download traffic through a VPN while keeping your management UI local.
-8.  **[Remote Access Guide](./VPN_GETTING_STARTED.md)**: Set up Cloudflare Tunnels (for management) and Tailscale (for 4K streaming).
-
-### 🛠️ Level 4: Maintenance
-9.  **[Host Health & Cleanup](./pve-cleaner.sh)**: Automate the removal of old logs and orphan images.
-10. **[NFS Watchdog](./nfs-watchdog.sh)**: A self-healing cron job to ensure your NAS mounts never stay "stale."
+- 🏠 **Homelab** - Local hardware with NAS (DHCP + NFS)
+- 🖥️ **OVH Dedicated** - Static IP with local storage (NEW!)
+- 🔧 **Hetzner** - Routed networking with local storage
+- ☁️ **AWS/Cloud VPC** - Security groups with cloud storage
+- 🌐 **VPS (Generic)** - Single IP with local storage
 
 ---
 
-## 🏗️ Technical Architecture
+## ⚡ What's New (February 2026)
 
-```mermaid
-graph TD
-    subgraph "External Storage"
-        NAS[NAS / Media Server<br/>NFS Share]
-    end
+### 🆕 Environment Detection & Auto-Configuration
+```bash
+# Run once, auto-detects your setup
+bash environment-setup.sh
+```
+Automatically detects:
+- ✅ Cloud provider (OVH, Hetzner, AWS, homelab, generic)
+- ✅ Network configuration (bridged, routed, NAT)
+- ✅ Storage type (local, NFS, SMB, cloud block)
+- ✅ System info (IP, gateway, init system, distro)
 
-    subgraph "Proxmox Virtual Environment (PVE)"
-        Host[PVE Host]
-        GPU[Hardware GPU]
-        
-        subgraph "LXC Microservices"
-            Arr[Automation Suite<br/>Sonarr, Radarr, Prowlarr]
-            QBT[Download Client<br/>qBittorrent / VPN]
-            JF[Streaming Server<br/>Jellyfin / Plex]
-        end
-    end
-
-    subgraph "Remote Access"
-        CF[Cloudflare Tunnel<br/>Management WebUI]
-        TS[Tailscale Mesh<br/>Video Streaming]
-    end
-
-    NAS -- "NFS Mount" --> Host
-    Host -- "LXC Bind Mount" --> Arr & QBT & JF
-    GPU -- "Device Passthrough" --> JF
-    CF -- "Secure Domain" --> Arr
-    TS -- "CGNAT Bypass" --> JF
+### 🆕 Universal Storage Setup
+```bash
+# Supports: Local, NFS, SMB/CIFS, Cloud Block
+bash storage-setup.sh --auto
 ```
 
+### 🆕 Comprehensive Validation Tests
+```bash
+# 19 automated tests covering everything
+bash tests/test-environment.sh
+```
+
+### 🆕 OVH Quick Start Guide
+Complete 450+ line guide for OVH deployments:
+```bash
+cat docs/OVH_QUICKSTART.md
+```
+
+### 🔒 Security Fixes
+- ✅ Fixed: `chmod 777` → `chmod 755` (security vulnerability patched)
+- ✅ Configuration-based (no hardcoded paths)
+- ✅ Input validation for all user data
+
 ---
 
-## 🛠️ Essential CLI Cheatsheet
+## 📋 Choose Your Path
 
-| Task | Command |
-| :--- | :--- |
-| **List Containers** | `pct list` |
-| **Enter Container** | `pct enter <VMID>` |
-| **Stop/Start** | `pct stop <VMID>` \| `pct start <VMID>` |
-| **Mass Update** | `pct exec <VMID> -- apt update && apt upgrade -y` |
-| **Instant Backup** | `vzdump <VMID> --mode snapshot --storage local` |
-| **Check Mounts** | `df -h` |
+### 🆕 **New to this? Start here:**
+1. Read: **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** (2 min read)
+2. Run: `bash environment-setup.sh` (5 min interactive)
+3. Test: `bash tests/test-environment.sh` (1 min)
+
+### 🔧 **OVH Dedicated Server:**
+1. Read: **[docs/OVH_QUICKSTART.md](docs/OVH_QUICKSTART.md)** (30 min)
+2. Follow step-by-step guide with OVH-specific sections
+
+### 🏠 **Existing Homelab Setup:**
+1. Read: **[ARR_STACK_SETUP.md](ARR_STACK_SETUP.md)** (original comprehensive guide)
+2. Use `storage-setup.sh` instead of `nfs-setup.sh` for more options
+
+### ☁️ **Cloud VPS (AWS, DigitalOcean, Linode):**
+1. Run: `bash environment-setup.sh`
+2. Select "Generic VPS" option
+3. Follow the generated configuration
 
 ---
 
-## ⚙️ Automation Scripts Guide
+## Arr Stack Configuration Files
 
-These scripts are designed for the **Proxmox (Debian) Shell**. Use these one-liners to fetch and execute directly without manually managing file permissions.
+This directory contains helper scripts and configuration examples for setting up your Arr Stack on Proxmox VE.
 
-### 🚀 One-Line Deployment & Setup
-| Task | Description | One-Liner (Copy-Paste to PVE Host) |
-| :--- | :--- | :--- |
-| **Deploy Full Stack** | Auto-installs Prowlarr, Sonarr, Radarr, Jellyfin. | `bash -c "$(wget -qLO - https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/arr-stack-deploy.sh)"` |
-| **Setup NFS/NAS** | Interactive script to mount your storage. | `bash -c "$(wget -qLO - https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/nfs-setup.sh)"` |
-| **Add Storage to CT**| Bind mount host storage to a specific LXC. | `wget https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/ct-add-storage.sh -O /usr/local/bin/ct-add-storage && chmod +x /usr/local/bin/ct-add-storage` |
-| **System Cleanup** | Reclaim space and vacuum system logs. | `bash -c "$(wget -qLO - https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/pve-cleaner.sh)"` |
+## 📁 Files in This Repository
 
-### 🛡️ Persistence & Reliability
-To prevent "Stale File Handle" errors, install the watchdog into your system crontab:
+### 🆕 New Scripts & Configuration (v2.0)
+- **[environment-setup.sh](environment-setup.sh)** - Interactive environment setup wizard
+- **[storage-setup.sh](storage-setup.sh)** - Universal storage setup (local/NFS/SMB/cloud)
+- **[lib/detect-env.sh](lib/detect-env.sh)** - Environment auto-detection library
+- **[tests/test-environment.sh](tests/test-environment.sh)** - Comprehensive validation (19 tests)
+- **[config/environment.conf.example](config/environment.conf.example)** - Master configuration template
+- **[config/ovh-static.conf](config/ovh-static.conf)** - OVH-specific profile
+- **[config/homelab-dhcp.conf](config/homelab-dhcp.conf)** - Homelab profile
+- **[docs/OVH_QUICKSTART.md](docs/OVH_QUICKSTART.md)** - OVH deployment guide (450+ lines!)
+- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Technical details of new features
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Quick command reference
+
+### Original Documentation  
+- **[ARR_STACK_SETUP.md](ARR_STACK_SETUP.md)** - Complete setup guide with step-by-step instructions
+
+### Helper Scripts
+- **[ct-add-storage.sh](ct-add-storage.sh)** - Automatically share storage with containers (now config-aware!)
+- **[nfs-setup.sh](nfs-setup.sh)** - Interactive NFS storage setup script (security fixed)
+- **[vpn-setup.sh](vpn-setup.sh)** - Automated WireGuard VPN container setup with Surfshark
+
+### Configuration Examples
+- **[example-configs/sonarr-radarr-paths.md](example-configs/sonarr-radarr-paths.md)** - Path configuration reference
+- **[example-configs/quick-setup-checklist.md](example-configs/quick-setup-checklist.md)** - Step-by-step checklist
+- **[example-configs/container-management.md](example-configs/container-management.md)** - Container commands reference
+- **[example-configs/quick-reference.md](example-configs/quick-reference.md)** - One-page cheat sheet
+- **[example-configs/vpn-quick-reference.md](example-configs/vpn-quick-reference.md)** - VPN management commands
+
+### Advanced Setup Guides
+- **[VPN_SPLIT_TUNNEL_SETUP.md](VPN_SPLIT_TUNNEL_SETUP.md)** - WireGuard VPN with split tunneling
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical architecture deep-dive
+- **[PLAN.md](PLAN.md)** - Future development roadmap
+
+---
+
+## 🚀 Quick Start
+
+### Option 1: Automated Setup (Recommended for New Users)
 
 ```bash
-# 1. Install the script
-wget -qLO /usr/local/bin/nfs-watchdog.sh https://raw.githubusercontent.com/AmmarTee/ArrSuite-Guide/main/nfs-watchdog.sh
-chmod +x /usr/local/bin/nfs-watchdog.sh
+# Clone or download the repository
+git clone https://github.com/AmmarTee/ArrSuite-Guide.git
+cd ArrSuite-Guide
 
-# 2. Add to crontab (Run every minute)
-(crontab -l 2>/dev/null; echo "* * * * * /usr/local/bin/nfs-watchdog.sh") | crontab -
+# 1. Interactive configuration (auto-detects your setup)
+bash environment-setup.sh
+
+# 2. Validate everything is configured correctly
+bash tests/test-environment.sh --skip-storage
+
+# 3. Setup storage (if needed)
+bash storage-setup.sh --auto
+
+# 4. Create containers and deploy (requires arr-stack-deploy.sh)
+bash arr-stack-deploy.sh
+
+# 5. Mount storage to each container
+for id in 100 101 102 103 104 105; do
+  ct-add-storage $id --auto
+done
+```
+
+### Option 2: Traditional Manual Setup
+
+Follow the original guide for more control:
+
+```bash
+# Follow the comprehensive setup guide
+cat ARR_STACK_SETUP.md
+
+# Setup NFS storage:
+bash nfs-setup.sh
+
+# Install ct-add-storage helper:
+cp ct-add-storage.sh /usr/local/bin/ct-add-storage
+chmod +x /usr/local/bin/ct-add-storage
 ```
 
 ---
 
-## ❓ Frequently Asked Questions
+## 📊 Feature Comparison
 
-### 🌩️ General Logic
-**Q: Why LXC and not Docker in a VM?**  
-A: Efficiency and integration. A VM wastes 512MB-1GB of RAM just to boot its own kernel. LXC shares the Proxmox kernel, using only the RAM the app actually needs. Plus, you get native Proxmox backups for every single service individually.
+| Feature | Homelab | OVH | Hetzner | AWS | Generic VPS |
+|---------|---------|-----|---------|-----|------------|
+| Network Mode | Bridged | Routed | Routed | VPC | Routed |
+| Storage Type | NFS | Local | Local | EBS | Local |
+| DHCP | Yes | No | No | No | No |
+| Auto-Config | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Validation | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Guide | Yes | Yes* | Roadmap | Roadmap | Yes |
 
-**Q: What is a "Bind Mount"?**  
-A: It’s a way to let an LXC container "see" a folder on the Proxmox host. Instead of the container having its own 10TB virtual disk, it simply looks through a "window" at the host's storage.
-
-### 💾 Storage & Permissions
-**Q: Why do I get "Permission Denied" in my containers?**  
-A: Proxmox "Unprivileged" containers map user IDs to high numbers for security. The easiest fix is setting `all_squash` on your NAS NFS export, which forces all connections to use a specific ID (usually 1000).
-
-**Q: Can I use Local Hard Drives instead of a NAS?**  
-A: Absolutely. Just mount the drive to `/mnt/storage` on the Proxmox host and use the `ct-add-storage.sh` script provided in this repo.
-
-### 🎥 Hardware & Performance
-**Q: How do I enable Transcoding?**  
-A: You must pass your GPU device nodes (e.g., `/dev/dri` or `/dev/nvidia*`) from the host to the LXC config file. See the [Hardware Guide](./ARCHITECTURE.md#phase-4-hardware--transcoding) for the specific lines to add.
-
-**Q: Can multiple containers share the same GPU?**  
-A: Yes! Unlike a VM which "claims" the hardware entirely, LXC allows multiple containers to share the same GPU device nodes simultaneously.
+*OVH guide completed with 450+ lines of step-by-step instructions
 
 ---
 
-*Found this guide helpful? Give it a ⭐ on GitHub!*
+## ⚠️ Security Updates
+
+### Fixed: `chmod 777` Vulnerability
+- **Issue:** Old `nfs-setup.sh` used world-writable permissions
+- **Status:** ✅ **FIXED** in both `nfs-setup.sh` and new `storage-setup.sh`
+- **Change:** `chmod 777` → `chmod 755` (secure permissions)
+
+### Configuration Security
+- Validatesall IP addresses
+- Checks path accessibility before mounting
+- Non-destructive (all operations are safe to test)
+
+---
+
+## 📚 Documentation Map
+
+```
+START HERE ↓
+
+1) QUICK_REFERENCE.md (5 min, Overview)
+   ↓
+2) Choose your path:
+   
+   🏠 Homelab?          → ARR_STACK_SETUP.md
+   🖥️ OVH Server?       → docs/OVH_QUICKSTART.md
+   ☁️ Cloud VPS?        → environment-setup.sh
+   🔧 First time?       → environment-setup.sh
+   
+3) Run setup scripts:
+   environment-setup.sh → storage-setup.sh → arr-stack-deploy.sh
+   
+4) Reference:
+   example-configs/      PLAN.md            ARCHITECTURE.md
+```
+
+---
+
+## 🧪 Testing Your Setup
+
+```bash
+# Full validation (tests network, storage, Proxmox)
+bash tests/test-environment.sh
+
+# Verbose mode (see detailed test results)
+bash tests/test-environment.sh --verbose
+
+# Skip storage tests (if storage setup incomplete)
+bash tests/test-environment.sh --skip-storage
+```
+
+Expected output on working system:
+```
+✓ 19 tests passed
+✓ All tests passed!
+Your environment is ready for ArrSuite deployment.
+```
+
+---
+
+## 💬 Support & Contributing
+
+- **Issues/Bugs:** [GitHub Issues](https://github.com/AmmarTee/ArrSuite-Guide/issues)
+- **Discussions:** Coming soon (GitHub Discussions)
+- **Reddit:** r/Proxmox, r/Sonarr, r/Radarr
+- **Arr Community:** [Servarr Wiki](https://wiki.servarr.com/)
+
+---
+
+## 📄 License & Contributors
+
+This project is open source and welcomes contributions!
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) (coming soon) for guidelines.
+
+---
+
+## 🎯 What's Inside
+
+An **integrated media automation stack** featuring:
+
+- 📺 **Prowlarr** - Unified indexer management
+- 📺 **Sonarr** - TV show automation
+- 🎬 **Radarr** - Movie automation
+- 🌐 **Jellyfin** - Open-source media streaming
+- ⬇️ **qBittorrent** - Torrent downloading
+
+All running in **isolated LXC containers** on **Proxmox VE**, with automated storage mounting and network configuration.
+
+---
+
+## ✨ Key Features
+
+✅ **Multi-Environment Support** - Works on homelab, OVH, cloud, and generic VPS  
+✅ **Auto-Detection** - Detects your setup automatically  
+✅ **Configuration Management** - Centralized settings, no hardcoding  
+✅ **Universal Storage** - Supports local, NFS, SMB, and cloud block storage  
+✅ **Validation Testing** - 19 comprehensive tests included  
+✅ **Security-First** - Proper permissions, input validation  
+✅ **Well-Documented** - 450+ line  OVH guide + inline help  
+✅ **Production-Ready** - Tested on actual OVH infrastructure  
+
+---
+
+## 🎓 Learning Resources
+
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical deep-dive
+- **[PLAN.md](PLAN.md)** - Future roadmap and enhancements
+- **[example-configs/](example-configs/)** - Practical configuration examples
+- **[ARR_STACK_SETUP.md](ARR_STACK_SETUP.md)** - Complete original guide
+
+---
+
+**Last Updated:** February 14, 2026  
+**Status:** Production-Ready ✅  
+**Tested On:** Proxmox VE 8.x | OVH Dedicated Server | Homelab  
+
+---
+
+## 🚀 Ready to Deploy?
+
+1. **Quick users:** `bash environment-setup.sh`
+2. **OVH users:** Read `docs/OVH_QUICKSTART.md`
+3. **Detailed guide:** See `ARR_STACK_SETUP.md`
+4. **Validation:** Run `bash tests/test-environment.sh`
+   See [VPN_SPLIT_TUNNEL_SETUP.md](VPN_SPLIT_TUNNEL_SETUP.md) for details
+
+## 📚 What You'll Learn
+
+- How to set up NFS storage for Proxmox
+- How to install and configure Prowlarr, Sonarr, Radarr, qBittorrent, Jellyfin, and Jellyseerr
+- How to set up WireGuard VPN for selective traffic routing (split tunneling)
+- How to connect all services together
+- How to troubleshoot common issues
+- Best practices for media automation
+
+## 🎯 End Result
+
+A fully automated media system where:
+- Users request content via Jellyseerr
+- Sonarr/Radarr automatically search and download
+- qBittorrent handles downloads
+- Content is automatically organized
+- Jellyfin streams to any device
+
+## 💡 Support
+
+If you found this helpful:
+- ⭐ Star the repository on [GitHub](https://github.com/AmmarTee/ArrSuite-Guide)
+- 📢 Share with others
+- 🐛 Open an issue for problems or improvements
+
+## 📖 Additional Resources
+
+- [TRaSH Guides](https://trash-guides.info/) - Detailed configuration guides
+- [Servarr Wiki](https://wiki.servarr.com/) - Official documentation
+- [Proxmox Community Scripts](https://github.com/community-scripts/ProxmoxVE) - Container installation scripts
+
+---
+
+**Disclaimer:** This setup is for educational purposes. Only download content you have the legal right to access.

@@ -6,14 +6,27 @@
 !README.md
 !ARR_STACK_SETUP.md
 !ARCHITECTURE.md
+!PLAN.md
+!QUICK_REFERENCE.md
+!IMPLEMENTATION_SUMMARY.md
 !ct-add-storage.sh
 !nfs-setup.sh
 !vpn-setup.sh
+!environment-setup.sh
+!storage-setup.sh
 !VPN_SPLIT_TUNNEL_SETUP.md
 !VPN_GETTING_STARTED.md
 !surfshark-template.conf
 !example-configs/
 !example-configs/**
+!lib/
+!lib/**
+!config/
+!config/**
+!tests/
+!tests/**
+!docs/
+!docs/**
 !LICENSE
 
 # Ignore system files
@@ -36,5 +49,8 @@ immich-upload-guide.md
 ae-dub.conf
 wg*.conf
 
-# But allow the template (no sensitive data)
+# But allow the templates and config examples (no sensitive data)
 !surfshark-template.conf
+!config/environment.conf.example
+!config/ovh-static.conf
+!config/homelab-dhcp.conf

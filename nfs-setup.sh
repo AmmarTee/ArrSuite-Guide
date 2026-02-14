@@ -66,7 +66,11 @@ mkdir -p "$MOUNT_POINT/torrents"
 
 echo ""
 echo "Step 6: Setting permissions..."
-chmod -R 777 "$MOUNT_POINT"
+# SECURITY FIX: Use 755 instead of 777 (no world-writable)
+# This prevents unauthorized modification of media files
+chmod -R 755 "$MOUNT_POINT"
+find "$MOUNT_POINT" -type d -exec chmod 755 {} \;
+find "$MOUNT_POINT" -type f -exec chmod 644 {} \;
 
 echo ""
 echo "Step 7: Verifying..."

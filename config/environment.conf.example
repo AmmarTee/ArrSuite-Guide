@@ -1,0 +1,221 @@
+# =============================================================================
+# ArrSuite Environment Configuration Template
+# =============================================================================
+#
+# This file contains all configuration options for your ArrSuite deployment.
+# Copy this file to environment.conf and customize for your environment.
+#
+# Usage:
+#   cp config/environment.conf.example config/environment.conf
+#   # Edit environment.conf with your values
+#   source config/environment.conf
+#
+
+# =============================================================================
+# ENVIRONMENT DETECTION (Auto-filled by environment-setup.sh)
+# =============================================================================
+
+# Detected provider: ovh|homelab|digitalocean|hetzner|generic
+DETECTED_PROVIDER="unknown"
+
+# Network mode: bridged|routed|nat
+NETWORK_MODE="routed"
+
+# =============================================================================
+# NETWORK CONFIGURATION
+# =============================================================================
+
+# Primary network interface (e.g., eth0, ens0)
+NETWORK_INTERFACE="eth0"
+
+# Network mode: bridged|routed|nat
+# - bridged: Container gets IP from same network as host (homelab)
+# - routed: Container gets IP from separate subnet (OVH, cloud)
+# - nat: Container uses NAT (restricted networks)
+NETWORK_TYPE="routed"
+
+# Gateway IP address (auto-detected, set only if different)
+#GATEWAY_IP="192.168.1.1"
+
+# Primary IP address (auto-detected, set only if different)
+#PRIMARY_IP="192.168.1.100"
+
+# Subnet in CIDR notation (e.g., 192.168.1.0/24)
+# Auto-detected for most environments
+#SUBNET_RANGE="192.168.1.0/24"
+
+# Bridge interface (only for bridged mode)
+BRIDGE_NAME="vmbr0"
+
+# For static IP containers (OVH, Hetzner):
+# First container IP - will increment from here
+CONTAINER_IP_START="192.168.1.100"
+
+# How many IPs to allocate for containers
+CONTAINER_IP_COUNT="10"
+
+# =============================================================================
+# STORAGE CONFIGURATION
+# =============================================================================
+
+# Storage type: local|nfs|smb|block
+# - local: Local disk partition (OVH, most VPS)
+# - nfs: NFS share from NAS (homelab)
+# - smb: SMB/CIFS share (Windows network)
+# - block: Cloud block storage (AWS EBS, etc.)
+STORAGE_TYPE="local"
+
+# Mount point for media storage
+# This is where arr applications will look for media
+STORAGE_MOUNT_POINT="/mnt/media"
+
+# For NFS storage only:
+NFS_SERVER_IP=""
+NFS_EXPORT_PATH=""
+NFS_MOUNT_OPTIONS="defaults,_netdev,vers=4,rw"
+
+# For SMB/CIFS storage only:
+SMB_SERVER=""
+SMB_SHARE=""
+SMB_USERNAME=""
+SMB_PASSWORD=""
+SMB_MOUNT_OPTIONS="defaults,username=${SMB_USERNAME},password=${SMB_PASSWORD},uid=1000,gid=1000"
+
+# For block storage (cloud providers):
+BLOCK_DEVICE=""  # e.g., /dev/vdb, /dev/sdb
+
+# Local storage path (for local storage type)
+# Directory where container storage will be mounted
+LOCAL_STORAGE_PATH="/mnt/media"
+
+# =============================================================================
+# PROXMOX CONFIGURATION
+# =============================================================================
+
+# Proxmox storage name for VM/container images
+PROXMOX_STORAGE="local-lvm"
+
+# Base container ID (containers will be numbered from here)
+CONTAINER_ID_BASE="100"
+
+# Number of containers to allocate IDs for
+CONTAINER_ID_COUNT="20"
+
+# CPU cores per container
+CONTAINER_CPU="${CONTAINER_CPU:-2}"
+
+# RAM per container (in MB)
+CONTAINER_RAM="${CONTAINER_RAM:-2048}"
+
+# Root disk size for containers (in GB)
+CONTAINER_DISK_SIZE="${CONTAINER_DISK_SIZE:-30}"
+
+# =============================================================================
+# VPN CONFIGURATION (For WireGuard/Surfshark setup)
+# =============================================================================
+
+# Enable VPN service
+ENABLE_VPN="false"
+
+# VPN container ID
+VPN_CONTAINER_ID=""
+
+# VPN provider: surfshark|custom
+VPN_PROVIDER="surfshark"
+
+# Surfshark connection configuration
+SURFSHARK_USERNAME=""
+SURFSHARK_PASSWORD=""
+
+# VPN server location (for Surfshark)
+SURFSHARK_SERVER="de-zrh.prod.surfshark.com"
+
+# Internal VPN network (bridge networks through VPN)
+VPN_ENABLE_ROUTING="false"
+VPN_ROUTED_CONTAINERS="101,102,103"
+
+# =============================================================================
+# SECURITY CONFIGURATION
+# =============================================================================
+
+# Firewall mode: none|iptables|cloud-native
+FIREWALL_MODE="none"
+
+# Enable UFW (Uncomplicated Firewall)
+UFW_ENABLED="false"
+
+# SSH port
+SSH_PORT="22"
+
+# Allow external SSH access
+SSH_ALLOW_REMOTE="false"
+
+# =============================================================================
+# CLOUD PROVIDER SPECIFIC (OVH, AWS, etc.)
+# =============================================================================
+
+# For OVH:
+OVH_MAC_ADDRESS=""  # MAC address for static IP
+OVH_ANTI_DDOS_ENABLED="false"
+OVH_VLAN_ID=""      # Optional VLAN ID for vRack
+
+# For AWS:
+AWS_REGION=""
+AWS_AVAILABILITY_ZONE=""
+AWS_SECURITY_GROUP=""
+
+# For Hetzner:
+HETZNER_DATACENTER=""
+HETZNER_NETWORK="hcloud"
+
+# For DigitalOcean:
+DIGITALOCEAN_REGION=""
+DIGITALOCEAN_VPC_UUID=""
+
+# =============================================================================
+# ARRSUITE APPLICATION CONFIGURATION
+# =============================================================================
+
+# Email for Let's Encrypt (optional)
+LETSENCRYPT_EMAIL=""
+
+# Domain for external access (optional)
+EXTERNAL_DOMAIN=""
+
+# Timezone
+TIMEZONE="UTC"
+
+# Locale
+LOCALE="en_US.UTF-8"
+
+# =============================================================================
+# DEPLOYMENT OPTIONS
+# =============================================================================
+
+# Automatically create containers on deployment
+AUTO_CREATE_CONTAINERS="false"
+
+# Services to deploy (space-separated)
+SERVICES_TO_DEPLOY="prowlarr sonarr radarr qbittorrent jellyfin"
+
+# Skip user confirmation prompts
+SKIP_CONFIRMATION="false"
+
+# Enable verbose logging
+VERBOSE_LOGGING="false"
+
+# =============================================================================
+# ADVANCED OPTIONS
+# =============================================================================
+
+# IP address validation enabled
+VALIDATE_IPS="true"
+
+# Test connectivity before deployment
+TEST_CONNECTIVITY="true"
+
+# Create backup before modifications
+CREATE_BACKUPS="true"
+
+# Dry-run mode (show what would be done, don't execute)
+DRY_RUN="false"
