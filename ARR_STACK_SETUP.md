@@ -88,7 +88,8 @@ Add to `/etc/fstab` so it mounts automatically on reboot:
 nano /etc/fstab
 
 # Add this line (adjust IP and path for your setup):
-192.168.1.200:/nfs/Proxmox /mnt/cold-storage nfs defaults,_netdev 0 0
+# Optimized for qBittorrent and media workloads:
+192.168.1.200:/nfs/Proxmox /mnt/cold-storage nfs soft,async,nolock,rsize=131072,wsize=131072,timeo=180,retrans=2,_netdev 0 0
 
 # Save: CTRL+O, Enter, then CTRL+X to exit
 ```
@@ -912,6 +913,42 @@ curl http://localhost:<PORT>
 
 ---
 
+### "qBittorrent torrents stuck at 100% / Files won't move"
+
+**Problem:** Torrents complete but won't move from incomplete to category folders. Status shows 100% but stuck.
+
+**Root Cause:** NFS mount options causing file operations to hang or fail. Using `hard` mount mode or file locking can cause qBittorrent to block indefinitely when moving files on NFS.
+
+**Solution:**
+
+```bash
+# 1. Update NFS mount options in /etc/fstab
+nano /etc/fstab
+
+# Replace the NFS line with optimized options:
+192.168.1.200:/nfs/Proxmox /mnt/cold-storage nfs soft,async,nolock,rsize=131072,wsize=131072,timeo=180,retrans=2,_netdev 0 0
+
+# 2. Remount with new options
+umount /mnt/cold-storage
+mount -a
+systemctl daemon-reload
+
+# 3. Restart qBittorrent container
+pct restart 106
+
+# 4. Verify the fix in logs
+pct exec 106 -- tail -50 /root/.local/share/qBittorrent/logs/qbittorrent.log | grep "Moved torrent"
+```
+
+**Key NFS Options Explained:**
+- `soft` - Won't hang indefinitely on NFS problems (vs `hard`)
+- `nolock` - Disables NFS file locking (prevents stuck operations)
+- `async` - Better write performance for large file moves
+- `timeo=180` - 18 second timeout before retry
+- `retrans=2` - Retry twice before failing
+
+---
+
 ### "Permission denied" errors
 
 **Problem:** Services can't read/write to `/mnt/cold-storage`
@@ -1025,8 +1062,8 @@ mount -a
 
 # 2. Add _netdev to fstab to wait for network
 nano /etc/fstab
-# Add _netdev option:
-192.168.1.200:/nfs/Proxmox /mnt/cold-storage nfs defaults,_netdev 0 0
+# Use optimized mount options:
+192.168.1.200:/nfs/Proxmox /mnt/cold-storage nfs soft,async,nolock,rsize=131072,wsize=131072,timeo=180,retrans=2,_netdev 0 0
 
 # 3. Start container
 pct start <CTID>

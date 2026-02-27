@@ -451,10 +451,10 @@ setup_nfs_storage() {
     mkdir -p "$mount_point"/{downloads,incomplete,tv,movies,music,books,other}
     chmod 755 "$mount_point"
     
-    # Add to fstab
+    # Add to fstab with optimized options for qBittorrent
     print_info "Adding to /etc/fstab for persistence..."
     if ! grep -q "$nfs_server:$nfs_path" /etc/fstab; then
-        echo "$nfs_server:$nfs_path $mount_point nfs4 defaults,_netdev,vers=4,soft,timeo=180 0 2" >> /etc/fstab
+        echo "$nfs_server:$nfs_path $mount_point nfs soft,async,nolock,rsize=131072,wsize=131072,timeo=180,retrans=2,_netdev 0 0" >> /etc/fstab
         print_success "Added to /etc/fstab"
     fi
     

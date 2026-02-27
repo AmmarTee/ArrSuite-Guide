@@ -416,7 +416,7 @@ echo "STORAGE_MOUNT_POINT=\"$FINAL_STORAGE_PATH\"" >> "$CONFIG_FILE"
 if [ "$FINAL_STORAGE_TYPE" = "nfs" ]; then
     echo "NFS_SERVER_IP=\"$NFS_IP\"" >> "$CONFIG_FILE"
     echo "NFS_EXPORT_PATH=\"$NFS_PATH\"" >> "$CONFIG_FILE"
-    echo "NFS_MOUNT_OPTIONS=\"defaults,_netdev,vers=4,rw,soft,timeo=180\"" >> "$CONFIG_FILE"
+    echo "NFS_MOUNT_OPTIONS=\"soft,async,nolock,rsize=131072,wsize=131072,timeo=180,retrans=2,_netdev\"" >> "$CONFIG_FILE"
 fi
 
 if [ "$FINAL_STORAGE_TYPE" = "smb" ]; then

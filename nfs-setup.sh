@@ -49,7 +49,14 @@ fi
 
 echo ""
 echo "Step 4: Adding to /etc/fstab for automatic mounting..."
-FSTAB_ENTRY="$NFS_IP:$NFS_PATH $MOUNT_POINT nfs defaults,_netdev 0 0"
+# Optimized NFS mount options for qBittorrent and media workloads:
+# - soft: Don't hang indefinitely on NFS issues
+# - async: Better write performance
+# - nolock: Disable file locking (prevents stuck file operations)
+# - rsize/wsize: 128KB read/write buffer sizes
+# - timeo=180: 18 second timeout
+# - retrans=2: Retry twice before giving up
+FSTAB_ENTRY="$NFS_IP:$NFS_PATH $MOUNT_POINT nfs soft,async,nolock,rsize=131072,wsize=131072,timeo=180,retrans=2,_netdev 0 0"
 
 if grep -q "$NFS_IP:$NFS_PATH" /etc/fstab; then
     echo "⚠ Entry already exists in /etc/fstab"
